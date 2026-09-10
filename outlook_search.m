@@ -162,8 +162,19 @@ function results = searchFolder(folder, storeName, parentPath, ...
         try
             item = items.Item(i);
 
-            % Samo mail poruke (Outlook MailItem Class = 43)
-            if item.Class ~= 43
+            % Obuhvati SVE mail-tipa stavke (obicna posta, receipt/report
+            % varijante, S/MIME poruke, itd). Numericki 'Class' property
+            % (npr. 43) nije pouzdan - iste poruke mogu vratiti razlicite
+            % vrednosti (npr. 111) u zavisnosti od Outlook verzije/tipa
+            % veze. 'MessageClass' je stabilan string identifikator i
+            % SVE prave mail poruke pocinju sa 'IPM.Note'.
+            try
+                msgClass = char(item.MessageClass);
+            catch
+                msgClass = '';
+            end
+
+            if ~startsWith(msgClass, 'IPM.Note')
                 continue;
             end
 
